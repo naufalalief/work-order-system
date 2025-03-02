@@ -32,7 +32,7 @@ const getWorkOrders = async (req: NextApiRequest, res: NextApiResponse) => {
         where: { assignedToId: userId },
         include: { assignedTo: true, statusHistory: true },
       });
-      return res.status(200).json({ workOrders });
+      return res.status(200).json({ data: workOrders });
     } else {
       return res.status(403).json({ message: "Forbidden." });
     }

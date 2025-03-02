@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Role } from "prisma/prisma-client";
 import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 interface Auth {
   username: string;
@@ -73,11 +73,40 @@ export const login = async ({ username, password, res }: AuthWithResponse) => {
     const token = jwt.sign(
       { userId: user.id, username, role: user.role },
       secret,
-      { expiresIn: "30s" }
+      { expiresIn: "3m" }
     );
 
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+export const verifyAdmin = async (
+  req: NextApiRequest,
+  res: NextApiResponse,
+  next: () => void
+) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+
+    if (decoded.role !== Role.PRODUCTION_MANAGER) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: Production Manager role required." });
+    }
+
+    // Tambahkan payload ke req untuk digunakan di handler API selanjutnya
+    (req as any).payload = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Unauthorized: Invalid token." });
   }
 };

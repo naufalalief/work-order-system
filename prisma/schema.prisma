@@ -39,6 +39,7 @@ model WorkOrder {
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
   statusHistory   WorkOrderStatusHistory[]
+  duration        Int?
 }
 
 model WorkOrderStatusHistory {
