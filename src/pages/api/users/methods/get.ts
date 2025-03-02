@@ -19,7 +19,11 @@ const getAllUsers = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(403).json({ message: "Forbidden." });
     }
 
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        role: Role.OPERATOR,
+      },
+    });
     return res.status(200).json({ users });
   } catch (error) {
     console.error("Error in getAllUsers:", error);
