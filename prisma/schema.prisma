@@ -39,15 +39,18 @@ model WorkOrder {
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
   statusHistory   WorkOrderStatusHistory[]
+  duration        Int? // Tambahkan field ini
 }
 
 model WorkOrderStatusHistory {
-  id          Int       @id @default(autoincrement())
-  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
-  workOrderId Int
-  status      Status
-  startedAt   DateTime  @default(now())
-  completedAt DateTime?
+  id                Int       @id @default(autoincrement())
+  workOrder         WorkOrder @relation(fields: [workOrderId], references: [id])
+  workOrderId       Int
+  status            Status
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+  progressNote      String?
+  quantityCompleted Int?
 }
 
 enum Status {

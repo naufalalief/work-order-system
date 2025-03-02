@@ -73,7 +73,8 @@ const editWorkOrder = async (
     let workOrderData;
 
     if (user.role === Role.PRODUCTION_MANAGER) {
-      workOrderData = workOrderSchema.parse(req.body);
+      const { progressNotes, ...rest } = req.body;
+      workOrderData = workOrderSchema.parse(rest);
     } else {
       workOrderData = operatorWorkOrderSchema.parse(req.body);
     }
@@ -81,6 +82,9 @@ const editWorkOrder = async (
     const currentWorkOrder = await prisma.workOrder.findUnique({
       where: {
         workOrderNumber,
+      },
+      include: {
+        statusHistory: true, // Sertakan statusHistory
       },
     });
 
@@ -103,28 +107,62 @@ const editWorkOrder = async (
       const statusHistoryData = {
         workOrderId: workOrder.id,
         status: workOrderData.status,
+        progressNote: req.body.progressNote,
+        quantityCompleted: req.body.quantityCompleted,
       };
 
-      if (currentWorkOrder?.status !== workOrderData.status) {
-        const statusHistoryData = {
-          workOrderId: workOrder.id,
-          status: workOrderData.status,
-        };
+      if (workOrderData.status === Status.COMPLETED) {
+        await prisma.workOrderStatusHistory.create({
+          data: {
+            ...statusHistoryData,
+            completedAt: new Date(),
+          },
+        });
 
-        if (workOrderData.status === Status.COMPLETED) {
-          await prisma.workOrderStatusHistory.create({
+        // Hitung durasi dan perbarui work order
+        const firstPending = currentWorkOrder.statusHistory.find(
+          (history) => history.status === Status.PENDING
+        );
+        const lastCompleted = { ...statusHistoryData, completedAt: new Date() };
+
+        if (firstPending && lastCompleted.completedAt) {
+          const duration = Math.floor(
+            (lastCompleted.completedAt.getTime() -
+              firstPending.startedAt.getTime()) /
+              1000
+          );
+
+          await prisma.workOrder.update({
+            where: { workOrderNumber },
             data: {
-              ...statusHistoryData,
-              completedAt: new Date(), // Tambahkan completedAt jika status COMPLETED
+              duration: duration,
             },
           });
-        } else {
-          await prisma.workOrderStatusHistory.create({
-            data: statusHistoryData,
-          });
         }
+      } else {
+        await prisma.workOrderStatusHistory.create({
+          data: statusHistoryData,
+        });
+      }
+
+      if (
+        user.role === Role.OPERATOR &&
+        (workOrderData.status === Status.IN_PROGRESS ||
+          workOrderData.status === Status.COMPLETED) &&
+        req.body.progressNote
+      ) {
+        let updatedProgressNotes = currentWorkOrder.progressNotes || [];
+        updatedProgressNotes = [...updatedProgressNotes, req.body.progressNote];
+
+        await prisma.workOrder.update({
+          where: { workOrderNumber },
+          data: {
+            progressNotes: updatedProgressNotes,
+          },
+        });
       }
     }
+
     res.status(200).json({
       message: "Work order updated successfully.",
       workOrder,
@@ -241,9 +279,13 @@ export const workOrderSchema = z.object({
   productName: z.string(),
   quantity: z.number(),
   deadline: z.string().transform((date) => new Date(date)),
-  status: z.enum([Status.PENDING, Status.IN_PROGRESS, Status.COMPLETED]),
+  status: z.enum([
+    Status.PENDING,
+    Status.IN_PROGRESS,
+    Status.COMPLETED,
+    Status.CANCELED,
+  ]),
   assignedToId: z.number(),
-  progressNotes: z.array(z.string()).optional(),
   updatedAt: z
     .string()
     .transform((date) => new Date(date))
