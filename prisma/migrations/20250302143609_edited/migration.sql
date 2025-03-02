@@ -38,6 +38,8 @@ CREATE TABLE "WorkOrderStatusHistory" (
     "status" "Status" NOT NULL,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "completedAt" TIMESTAMP(3),
+    "quantity" INTEGER,
+    "progressNotes" TEXT NOT NULL,
 
     CONSTRAINT "WorkOrderStatusHistory_pkey" PRIMARY KEY ("id")
 );
