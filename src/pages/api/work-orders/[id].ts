@@ -62,6 +62,7 @@ export default async function handler(
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 }
+
 const editWorkOrder = async (
   workOrderNumber: string,
   req: NextApiRequest,
@@ -73,10 +74,8 @@ const editWorkOrder = async (
 
     if (user.role === Role.PRODUCTION_MANAGER) {
       workOrderData = workOrderSchema.parse(req.body);
-    } else if (user.role === Role.OPERATOR) {
-      workOrderData = operatorWorkOrderSchema.parse(req.body);
     } else {
-      return res.status(403).json({ message: "Forbidden" });
+      workOrderData = operatorWorkOrderSchema.parse(req.body);
     }
 
     const currentWorkOrder = await prisma.workOrder.findUnique({
@@ -95,69 +94,40 @@ const editWorkOrder = async (
       return res.status(404).json({ message: "Work Order Not Found." });
     }
 
-    // Update WorkOrder (Production Manager only)
-    if (user.role === Role.PRODUCTION_MANAGER) {
-      await prisma.workOrder.update({
-        where: { workOrderNumber },
-        data: workOrderData,
-      });
-    }
+    const workOrder = await prisma.workOrder.update({
+      where: { workOrderNumber },
+      data: workOrderData,
+    });
 
     if (currentWorkOrder?.status !== workOrderData.status) {
       const statusHistoryData = {
-        workOrderId: currentWorkOrder.id,
+        workOrderId: workOrder.id,
         status: workOrderData.status,
-        quantity: workOrderData.quantity,
-        progressNotes: workOrderData.progressNotes
-          ? workOrderData.progressNotes.join(", ")
-          : "",
       };
 
-      if (workOrderData.status === Status.COMPLETED) {
-        await prisma.workOrderStatusHistory.create({
-          data: {
-            ...statusHistoryData,
-            completedAt: new Date(),
-          },
-        });
-      } else {
-        await prisma.workOrderStatusHistory.create({
-          data: statusHistoryData,
-        });
-      }
+      if (currentWorkOrder?.status !== workOrderData.status) {
+        const statusHistoryData = {
+          workOrderId: workOrder.id,
+          status: workOrderData.status,
+        };
 
-      // Hitung dan update duration hanya jika status baru COMPLETED
-      if (workOrderData.status === Status.COMPLETED) {
-        const firstPending = await prisma.workOrderStatusHistory.findFirst({
-          where: { workOrderId: currentWorkOrder.id, status: Status.PENDING },
-          orderBy: { startedAt: "asc" },
-        });
-
-        const lastCompleted = await prisma.workOrderStatusHistory.findFirst({
-          where: { workOrderId: currentWorkOrder.id, status: Status.COMPLETED },
-          orderBy: { startedAt: "desc" },
-        });
-
-        if (firstPending && lastCompleted && lastCompleted.completedAt) {
-          const duration = Math.floor(
-            (lastCompleted.completedAt.getTime() -
-              firstPending.startedAt.getTime()) /
-              1000
-          );
-
-          await prisma.workOrder.update({
-            where: { workOrderNumber },
-            data: { duration },
+        if (workOrderData.status === Status.COMPLETED) {
+          await prisma.workOrderStatusHistory.create({
+            data: {
+              ...statusHistoryData,
+              completedAt: new Date(), // Tambahkan completedAt jika status COMPLETED
+            },
+          });
+        } else {
+          await prisma.workOrderStatusHistory.create({
+            data: statusHistoryData,
           });
         }
       }
     }
-
     res.status(200).json({
       message: "Work order updated successfully.",
-      workOrder: await prisma.workOrder.findUnique({
-        where: { workOrderNumber },
-      }),
+      workOrder,
     });
   } catch (error) {
     console.error("Error occurred:", error);
@@ -273,7 +243,7 @@ export const workOrderSchema = z.object({
   deadline: z.string().transform((date) => new Date(date)),
   status: z.enum([Status.PENDING, Status.IN_PROGRESS, Status.COMPLETED]),
   assignedToId: z.number(),
-  progressNotes: z.string().array().optional(), // Ubah menjadi array string
+  progressNotes: z.array(z.string()).optional(),
   updatedAt: z
     .string()
     .transform((date) => new Date(date))
@@ -281,9 +251,13 @@ export const workOrderSchema = z.object({
 });
 
 export const operatorWorkOrderSchema = z.object({
-  status: z.enum([Status.IN_PROGRESS, Status.COMPLETED]),
-  quantity: z.number().optional(),
-  progressNotes: z.string().array().optional(), // Ubah menjadi array string
+  status: z.enum([
+    Status.PENDING,
+    Status.IN_PROGRESS,
+    Status.COMPLETED,
+    Status.CANCELED,
+  ]),
+  progressNotes: z.array(z.string()).optional(),
   updatedAt: z
     .string()
     .transform((date) => new Date(date))
