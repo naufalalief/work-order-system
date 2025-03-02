@@ -43,6 +43,21 @@ export default async function handler(
       console.error("Error in PUT handler:", error);
       return res.status(500).json({ message: "Internal server error." });
     }
+  } else if (req.method === "DELETE") {
+    try {
+      const user = authenticated(req); // Authenticate the user
+      if (user.expired) {
+        return res.status(401).json({ message: "Unauthorized: Token expired" });
+      }
+
+      await deleteWorkOrder(id as string, res, {
+        userId: user.userId,
+        role: user.role,
+      });
+    } catch (error) {
+      console.error("Error in DELETE handler:", error);
+      return res.status(500).json({ message: "Internal server error." });
+    }
   } else {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
@@ -173,6 +188,47 @@ const getWorkOrderById = async (
         duration, // Sertakan durasi dalam respons
       },
     });
+  } catch (error) {
+    console.error("Error occurred:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const deleteWorkOrder = async (
+  workOrderNumber: string,
+  res: NextApiResponse,
+  user: { userId: number; role: Role }
+) => {
+  if (user.role !== Role.PRODUCTION_MANAGER) {
+    return res.status(403).json({ message: "Forbidden." });
+  }
+
+  try {
+    const workOrder = await prisma.workOrder.findUnique({
+      where: {
+        workOrderNumber,
+      },
+    });
+
+    if (!workOrder) {
+      return res.status(404).json({
+        message: "Work Order Not Found.",
+      });
+    }
+
+    const workOrderHistory = await prisma.workOrderStatusHistory.deleteMany({
+      where: {
+        workOrderId: workOrder.id,
+      },
+    });
+
+    await prisma.workOrder.delete({
+      where: { workOrderNumber },
+    });
+
+    res.status(200).json({ message: "Work order deleted successfully." });
   } catch (error) {
     console.error("Error occurred:", error);
     return res.status(500).json({ message: "Internal server error." });
