@@ -44,9 +44,12 @@ const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
           workOrderNumber,
           ...workOrderData,
           status: Status.PENDING,
+          progressNotes: ["Starting..."],
           statusHistory: {
             create: {
+              quantity: workOrderData.quantity,
               status: workOrderData.status,
+              progressNotes: "Starting...",
             },
           },
         },
