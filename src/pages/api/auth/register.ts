@@ -4,7 +4,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import prisma from "@/utils/prisma";
 import { AuthWithResponse } from "@/utils/interfaces";
-import { authSchema } from "@/utils/schemas/authSchema";
+import { authSchema } from "@/utils/schemas";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {

@@ -3,7 +3,7 @@ import prisma from "@/utils/prisma";
 import { z } from "zod";
 import { Status } from "@prisma/client";
 import { verifyAdmin } from "../../auth/login";
-import { authenticated } from "@/middleware/auth";
+import { workOrderSchema } from "@/utils/schemas";
 
 const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -66,16 +66,3 @@ const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
 };
 
 export default createWorkOrder;
-
-export const workOrderSchema = z.object({
-  productName: z.string(),
-  quantity: z.number(),
-  deadline: z.string().transform((date) => new Date(date)),
-  status: z.enum([Status.PENDING, Status.IN_PROGRESS, Status.COMPLETED]),
-  assignedToId: z.number(),
-  progressNotes: z.array(z.string()).optional(),
-  updatedAt: z
-    .string()
-    .transform((date) => new Date(date))
-    .optional(),
-});

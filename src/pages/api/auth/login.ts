@@ -5,7 +5,7 @@ import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthWithResponse } from "@/utils/interfaces";
-import { authSchema } from "@/utils/schemas/authSchema";
+import { authSchema } from "@/utils/schemas";
 const secret = process.env.secretkey || "secret";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {

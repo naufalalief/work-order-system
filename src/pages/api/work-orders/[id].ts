@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Status } from "@prisma/client";
 import prisma from "@/utils/prisma";
 import { authenticated } from "@/middleware/auth";
+import { operatorWorkOrderSchema, workOrderSchema } from "@/utils/schemas";
 
 export default async function handler(
   req: NextApiRequest,
@@ -265,34 +266,3 @@ const deleteWorkOrder = async (
     await prisma.$disconnect();
   }
 };
-
-export const workOrderSchema = z.object({
-  productName: z.string(),
-  quantity: z.number(),
-  deadline: z.string().transform((date) => new Date(date)),
-  status: z.enum([
-    Status.PENDING,
-    Status.IN_PROGRESS,
-    Status.COMPLETED,
-    Status.CANCELED,
-  ]),
-  assignedToId: z.number(),
-  updatedAt: z
-    .string()
-    .transform((date) => new Date(date))
-    .optional(),
-});
-
-export const operatorWorkOrderSchema = z.object({
-  status: z.enum([
-    Status.PENDING,
-    Status.IN_PROGRESS,
-    Status.COMPLETED,
-    Status.CANCELED,
-  ]),
-  progressNotes: z.array(z.string()).optional(),
-  updatedAt: z
-    .string()
-    .transform((date) => new Date(date))
-    .optional(),
-});
