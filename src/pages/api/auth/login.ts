@@ -5,33 +5,8 @@ import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { AuthWithResponse } from "@/utils/interfaces";
-
+import { authSchema } from "@/utils/schemas/authSchema";
 const secret = process.env.secretkey || "secret";
-
-export const authSchema = z.object({
-  username: z.string().refine(
-    (val) => {
-      if (val.includes("admin")) {
-        return true;
-      }
-      return val.length >= 7;
-    },
-    {
-      message: "Username must be at least 7 characters.",
-    }
-  ),
-  password: z.string().refine(
-    (val) => {
-      if (val.includes("admin")) {
-        return true;
-      }
-      return val.length >= 7;
-    },
-    {
-      message: "Password must be at least 7 characters.",
-    }
-  ),
-});
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {

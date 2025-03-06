@@ -4,31 +4,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import prisma from "@/utils/prisma";
 import { AuthWithResponse } from "@/utils/interfaces";
-
-export const authSchema = z.object({
-  username: z.string().refine(
-    (val) => {
-      if (val.includes("admin")) {
-        return true;
-      }
-      return val.length >= 7;
-    },
-    {
-      message: "Username must be at least 7 characters.",
-    }
-  ),
-  password: z.string().refine(
-    (val) => {
-      if (val.includes("admin")) {
-        return true;
-      }
-      return val.length >= 7;
-    },
-    {
-      message: "Password must be at least 7 characters.",
-    }
-  ),
-});
+import { authSchema } from "@/utils/schemas/authSchema";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   try {
