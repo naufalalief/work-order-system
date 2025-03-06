@@ -2,11 +2,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Role } from "@prisma/client";
 import prisma from "@/utils/prisma";
-import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { AuthenticatedUser } from "@/utils/interfaces";
-
-const secret = process.env.secretkey || "secret";
+import { authenticated } from "@/middleware/auth";
 
 export default async function handler(
   req: NextApiRequest,
@@ -49,41 +46,6 @@ export default async function handler(
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 }
-
-export const authenticated = (req: NextApiRequest): AuthenticatedUser => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    throw new Error("Unauthorized");
-  }
-  try {
-    const decoded = jwt.verify(token, secret) as JwtPayload;
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      return {
-        userId: decoded.userId as number,
-        username: decoded.username as string,
-        role: decoded.role as Role,
-        expired: true,
-      };
-    }
-    return {
-      userId: decoded.userId as number,
-      username: decoded.username as string,
-      role: decoded.role as Role,
-      expired: false,
-    };
-  } catch (error) {
-    if (error instanceof TokenExpiredError) {
-      return {
-        userId: 0,
-        username: "",
-        role: Role.OPERATOR,
-        expired: true,
-      };
-    } else {
-      throw new Error("Unauthorized");
-    }
-  }
-};
 
 const getUserById = async (userId: number, res: NextApiResponse) => {
   try {
