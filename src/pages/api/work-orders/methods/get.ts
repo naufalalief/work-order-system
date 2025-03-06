@@ -17,7 +17,7 @@ const getWorkOrders = async (req: NextApiRequest, res: NextApiResponse) => {
       const workOrders = await prisma.workOrder.findMany({
         include: { assignedTo: true, statusHistory: true },
       });
-      return res.status(200).json({ workOrders });
+      return res.status(200).json({ data: workOrders });
     } else if (role === Role.OPERATOR) {
       const workOrders = await prisma.workOrder.findMany({
         where: { assignedToId: userId },
