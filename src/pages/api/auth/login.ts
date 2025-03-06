@@ -70,7 +70,6 @@ export const verifyAdmin = async (
         .json({ message: "Forbidden: Production Manager role required." });
     }
 
-    // Tambahkan payload ke req untuk digunakan di handler API selanjutnya
     (req as any).payload = decoded;
     next();
   } catch (error) {

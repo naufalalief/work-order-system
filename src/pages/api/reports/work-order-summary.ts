@@ -1,4 +1,3 @@
-// pages/api/reports/work-order-summary.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { Role, Status } from "@prisma/client";
 import prisma from "@/utils/prisma";

@@ -10,7 +10,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { id } = req.query; // 'id' will be the workOrderNumber
+  const { id } = req.query;
   console.log("Work Order Number: ", id);
 
   if (req.method === "GET") {
@@ -22,7 +22,7 @@ export default async function handler(
     }
   } else if (req.method === "PUT") {
     try {
-      const user = authenticated(req); // Authenticate the user
+      const user = authenticated(req);
       if (user.expired) {
         return res.status(401).json({ message: "Unauthorized: Token expired" });
       }
@@ -37,7 +37,7 @@ export default async function handler(
     }
   } else if (req.method === "DELETE") {
     try {
-      const user = authenticated(req); // Authenticate the user
+      const user = authenticated(req);
       if (user.expired) {
         return res.status(401).json({ message: "Unauthorized: Token expired" });
       }
@@ -76,7 +76,7 @@ const editWorkOrder = async (
         workOrderNumber,
       },
       include: {
-        statusHistory: true, // Sertakan statusHistory
+        statusHistory: true,
       },
     });
 
@@ -111,7 +111,6 @@ const editWorkOrder = async (
           },
         });
 
-        // Hitung durasi dan perbarui work order
         const firstPending = currentWorkOrder.statusHistory.find(
           (history) => history.status === Status.PENDING
         );
@@ -183,7 +182,7 @@ const getWorkOrderById = async (
       include: {
         assignedTo: true,
         statusHistory: {
-          orderBy: { startedAt: "asc" }, // Urutkan berdasarkan startedAt
+          orderBy: { startedAt: "asc" },
         },
       },
     });
@@ -192,7 +191,6 @@ const getWorkOrderById = async (
       return res.status(404).json({ message: "Work order not found." });
     }
 
-    // Hitung durasi
     let duration = null;
     if (workOrder.statusHistory.length > 0) {
       const firstPending = workOrder.statusHistory.find(
@@ -201,21 +199,21 @@ const getWorkOrderById = async (
       const lastCompleted = workOrder.statusHistory
         .slice()
         .reverse()
-        .find((history) => history.status === Status.COMPLETED); // Gunakan slice().reverse() agar tidak mengubah array asli
+        .find((history) => history.status === Status.COMPLETED);
 
       if (firstPending && lastCompleted) {
         duration = Math.floor(
           (lastCompleted.completedAt!.getTime() -
             firstPending.startedAt.getTime()) /
             1000
-        ); // Durasi dalam detik
+        );
       }
     }
 
     res.status(200).json({
       workOrder: {
         ...workOrder,
-        duration, // Sertakan durasi dalam respons
+        duration,
       },
     });
   } catch (error) {

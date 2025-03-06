@@ -1,4 +1,3 @@
-// pages/api/users/post.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { Role } from "@prisma/client";
 import prisma from "@/utils/prisma";
@@ -17,7 +16,6 @@ export default async function createUser(
       return res.status(403).json({ message: "Forbidden." });
     }
 
-    // Validasi input menggunakan Zod
     const userData = userSchema.parse(req.body);
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);

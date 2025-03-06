@@ -1,4 +1,3 @@
-// pages/api/users/[id].ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { Role } from "@prisma/client";
 import prisma from "@/utils/prisma";

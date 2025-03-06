@@ -1,4 +1,3 @@
-// pages/api/users/index.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import getAllUsers from "./methods/get";
 import createUser from "./methods/post";

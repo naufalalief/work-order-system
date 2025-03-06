@@ -7,9 +7,7 @@ import { workOrderSchema } from "@/utils/schemas";
 
 const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    // Gunakan verifyAdmin untuk memeriksa peran pengguna
     await verifyAdmin(req, res, async () => {
-      // Jika verifyAdmin berhasil, ini akan dijalankan
       const payload = (req as any).payload;
       console.log(payload);
 

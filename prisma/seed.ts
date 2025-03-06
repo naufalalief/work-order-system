@@ -1,4 +1,3 @@
-// filepath: /d:/project/sistem-manajemen-work-order/prisma/seed.ts
 import { PrismaClient, Role, Status } from "@prisma/client";
 import bcrypt from "bcrypt";
 
