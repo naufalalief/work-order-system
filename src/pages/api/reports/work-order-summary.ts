@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { Role, Status } from "@prisma/client";
 import prisma from "@/utils/prisma";
-import { authenticated } from "@/pages/api/users/methods/get";
+import { authenticated } from "@/middleware/auth";
 
 export default async function handler(
   req: NextApiRequest,

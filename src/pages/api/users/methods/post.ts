@@ -5,14 +5,7 @@ import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import { authenticated } from "@/middleware/auth";
-
-const userSchema = z.object({
-  username: z.string(),
-  password: z.string(),
-  role: z.enum([Role.PRODUCTION_MANAGER, Role.OPERATOR]),
-});
-
-const secret = process.env.secretkey || "secret";
+import { userSchema } from "@/utils/schemas";
 
 export default async function createUser(
   req: NextApiRequest,

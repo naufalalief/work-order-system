@@ -1,4 +1,4 @@
-import { Status } from "@prisma/client";
+import { Role, Status } from "@prisma/client";
 import { z } from "zod";
 
 export const authSchema = z.object({
@@ -24,6 +24,12 @@ export const authSchema = z.object({
       message: "Password must be at least 7 characters.",
     }
   ),
+});
+
+export const userSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  role: z.enum([Role.PRODUCTION_MANAGER, Role.OPERATOR]),
 });
 
 export const workOrderSchema = z.object({
