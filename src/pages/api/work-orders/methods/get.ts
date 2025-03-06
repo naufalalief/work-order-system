@@ -2,13 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Role } from "@prisma/client";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import prisma from "@/utils/prisma";
-
-interface AuthenticatedUser {
-  userId: number;
-  username: string;
-  role: Role;
-  expired: boolean;
-}
+import { AuthenticatedUser } from "@/utils/interfaces";
 
 const secret = process.env.secretkey || "secret";
 

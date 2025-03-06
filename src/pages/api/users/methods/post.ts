@@ -5,6 +5,7 @@ import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import { z } from "zod"; // Import Zod untuk validasi
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
+import { AuthenticatedUser } from "@/utils/interfaces";
 
 // Skema validasi Zod
 const userSchema = z.object({
@@ -12,13 +13,6 @@ const userSchema = z.object({
   password: z.string(),
   role: z.enum([Role.PRODUCTION_MANAGER, Role.OPERATOR]),
 });
-
-interface AuthenticatedUser {
-  userId: number;
-  username: string;
-  role: Role;
-  expired: boolean;
-}
 
 const secret = process.env.secretkey || "secret";
 

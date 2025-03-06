@@ -3,16 +3,7 @@ import { Role } from "prisma/prisma-client";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import prisma from "@/utils/prisma";
-
-interface Auth {
-  username: string;
-  password: string;
-  role?: Role;
-}
-
-interface AuthWithResponse extends Auth {
-  res: NextApiResponse;
-}
+import { AuthWithResponse } from "@/utils/interfaces";
 
 export const authSchema = z.object({
   username: z.string().refine(

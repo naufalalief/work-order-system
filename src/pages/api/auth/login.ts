@@ -4,16 +4,8 @@ import { Role } from "prisma/prisma-client";
 import prisma from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { AuthWithResponse } from "@/utils/interfaces";
 
-interface Auth {
-  username: string;
-  password: string;
-  role?: Role;
-}
-
-interface AuthWithResponse extends Auth {
-  res: NextApiResponse;
-}
 const secret = process.env.secretkey || "secret";
 
 export const authSchema = z.object({

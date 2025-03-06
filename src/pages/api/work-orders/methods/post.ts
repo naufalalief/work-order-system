@@ -4,13 +4,7 @@ import prisma from "@/utils/prisma";
 import { z } from "zod";
 import { Role, Status } from "@prisma/client";
 import { verifyAdmin } from "../../auth/login";
-
-interface AuthenticatedUser {
-  userId: number;
-  username: string;
-  role: Role;
-  expired: boolean;
-}
+import { AuthenticatedUser } from "@/utils/interfaces";
 
 const secret = process.env.secretkey || "secret";
 

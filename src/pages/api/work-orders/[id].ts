@@ -4,13 +4,7 @@ import { z } from "zod";
 import { Status } from "@prisma/client";
 import prisma from "@/utils/prisma";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
-
-interface AuthenticatedUser {
-  userId: number;
-  username: string;
-  role: Role;
-  expired: boolean;
-}
+import { AuthenticatedUser } from "@/utils/interfaces";
 
 const secret = process.env.secretkey || "secret";
 

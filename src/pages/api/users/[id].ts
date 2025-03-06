@@ -4,13 +4,7 @@ import { Role } from "@prisma/client";
 import prisma from "@/utils/prisma";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-
-interface AuthenticatedUser {
-  userId: number;
-  username: string;
-  role: Role;
-  expired: boolean;
-}
+import { AuthenticatedUser } from "@/utils/interfaces";
 
 const secret = process.env.secretkey || "secret";
 
@@ -18,7 +12,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { id } = req.query; // 'id' will be the userId
+  const { id } = req.query;
 
   if (req.method === "GET") {
     try {
