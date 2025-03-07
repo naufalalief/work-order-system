@@ -101,24 +101,21 @@ const editWorkOrder = async (
         status: workOrderData.status,
         progressNote: req.body.progressNote,
         quantityCompleted: req.body.quantityCompleted,
+        completedAt: new Date(),
       };
 
-      if (workOrderData.status === Status.COMPLETED) {
-        await prisma.workOrderStatusHistory.create({
-          data: {
-            ...statusHistoryData,
-            completedAt: new Date(),
-          },
-        });
+      await prisma.workOrderStatusHistory.create({
+        data: statusHistoryData,
+      });
 
+      if (workOrderData.status === Status.COMPLETED) {
         const firstPending = currentWorkOrder.statusHistory.find(
           (history) => history.status === Status.PENDING
         );
-        const lastCompleted = { ...statusHistoryData, completedAt: new Date() };
 
-        if (firstPending && lastCompleted.completedAt) {
+        if (firstPending && statusHistoryData.completedAt) {
           const duration = Math.floor(
-            (lastCompleted.completedAt.getTime() -
+            (statusHistoryData.completedAt.getTime() -
               firstPending.startedAt.getTime()) /
               1000
           );
@@ -130,10 +127,6 @@ const editWorkOrder = async (
             },
           });
         }
-      } else {
-        await prisma.workOrderStatusHistory.create({
-          data: statusHistoryData,
-        });
       }
 
       if (

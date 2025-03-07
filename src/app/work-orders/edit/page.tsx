@@ -102,21 +102,9 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
         deadline: new Date(deadline),
         status,
         assignedToId: Number(assignedToId),
+        progressNote: progressNotes,
+        quantityCompleted: quantityChanged,
       };
-
-      const combinedProgressNotes = [
-        ...workOrder.progressNotes,
-        ...progressNotes
-          .split(",")
-          .map((note) => note.trim())
-          .filter((note) => note),
-      ];
-      updateData.progressNotes = combinedProgressNotes;
-
-      if (userRole === "OPERATOR") {
-        updateData.quantityChanged = quantityChanged;
-        updateData.progressNotes = combinedProgressNotes;
-      }
 
       const response = await fetch(
         `/api/work-orders/${workOrder.workOrderNumber}`,
@@ -211,14 +199,14 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
             type="number"
             value={quantityChanged}
             onChange={(e) => setQuantityChanged(Number(e.target.value))}
-            placeholder="Quantity Changed"
+            placeholder="Quantity Completed"
           />
         )}
         <input
           type="text"
           name="progressNotes"
           id="progressNotes"
-          placeholder="Progress Notes (separated by comma)"
+          placeholder="Progress Note"
           value={progressNotes}
           onChange={(e) => setProgressNotes(e.target.value)}
         />

@@ -28,12 +28,12 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({ onWorkOrderAdded }) => {
         const token = localStorage.getItem("token");
         if (!token) {
           console.error("No token found. User not authenticated.");
-          return; // Stop fetching if no token
+          return;
         }
 
         const response = await fetch("/api/users?role=operator", {
           headers: {
-            Authorization: `Bearer ${token}`, // Include the token
+            Authorization: `Bearer ${token}`,
           },
         });
 

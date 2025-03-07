@@ -12,7 +12,7 @@ const getAllUsers = async (req: NextApiRequest, res: NextApiResponse) => {
           id: user.userId,
         },
       });
-      return res.status(200).json({ users: [loggedInUser] }); // Mengembalikan pengguna yang login sebagai array
+      return res.status(200).json({ users: [loggedInUser] });
     } else if (user.role === Role.PRODUCTION_MANAGER) {
       const users = await prisma.user.findMany({
         where: {

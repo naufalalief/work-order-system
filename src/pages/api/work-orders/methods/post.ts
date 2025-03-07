@@ -37,6 +37,8 @@ const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
           statusHistory: {
             create: {
               status: workOrderData.status,
+              completedAt: new Date(),
+              quantityCompleted: 0,
             },
           },
         },

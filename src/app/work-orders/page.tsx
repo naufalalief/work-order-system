@@ -19,6 +19,15 @@ interface WorkOrder {
     username: string;
   };
   progressNotes: string[];
+  statusHistory: {
+    id: number;
+    workOrderId: number;
+    status: string;
+    startedAt: string;
+    completedAt: string | null;
+    progressNote: string | null;
+    quantityCompleted: number | null;
+  }[];
 }
 
 interface WorkOrderTableProps {
@@ -64,6 +73,22 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
     onEditWorkOrder(order);
   };
 
+  const getLatestQuantityCompleted = (
+    statusHistory: WorkOrder["statusHistory"]
+  ): string | number => {
+    if (!statusHistory || statusHistory.length === 0) {
+      return "N/A";
+    }
+
+    for (let i = statusHistory.length - 1; i >= 0; i--) {
+      if (statusHistory[i].quantityCompleted !== null) {
+        return statusHistory[i].quantityCompleted!;
+      }
+    }
+
+    return "N/A";
+  };
+
   return (
     <table className="border border-gray-300 rounded-md p-2 w-full max-w-4xl">
       <thead className="bg-gray-200 text-left">
@@ -75,6 +100,7 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
           <th className="space-x-4">Status</th>
           <th className="space-x-4">Assigned To</th>
           <th className="space-x-4">Progress Notes</th>
+          <th className="space-x-4">Quantity Completed</th>
           <th className="space-x-4">Action</th>
         </tr>
       </thead>
@@ -92,6 +118,9 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
               {order.assignedTo?.username || "Unassigned"}
             </td>
             <td className="space-x-4">{order.progressNotes.join(", ")}</td>
+            <td className="space-x-4">
+              {getLatestQuantityCompleted(order.statusHistory)}
+            </td>
             <td>
               <button onClick={() => handleDelete(order)}>Delete</button>
               <button onClick={() => handleEdit(order)}>Edit</button>
@@ -130,7 +159,7 @@ export default function WorkOrders() {
           return;
         }
         setUserRole(decodedToken.role);
-        fetchWorkOrders(decodedToken.role); // Panggil fetchWorkOrders di sini
+        fetchWorkOrders(decodedToken.role);
       } else {
         console.log("Token invalid or exp missing");
         router.push("/");
@@ -176,8 +205,7 @@ export default function WorkOrders() {
       console.log("Data:", data);
 
       if (data && Array.isArray(data.data)) {
-        // Change to data.data
-        setWorkOrders(data.data); // Change to data.data
+        setWorkOrders(data.data);
       } else {
         console.error("Invalid data format:", data);
         setWorkOrders([]);
