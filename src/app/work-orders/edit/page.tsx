@@ -137,83 +137,169 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
   };
 
   return (
-    <div>
-      <div>Edit Work Order</div>
+    <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+        Edit Work Order
+      </h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="productName"
-          id="productName"
-          placeholder="Product Name"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-          disabled={userRole === "OPERATOR"}
-        />
-        <input
-          type="number"
-          name="quantity"
-          id="quantity"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          disabled={userRole === "OPERATOR"}
-        />
-        <input
-          type="date"
-          name="deadline"
-          id="deadline"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          disabled={userRole === "OPERATOR"}
-        />
-        <select
-          name="status"
-          id="status"
-          value={status}
-          onChange={handleStatusChange}
-        >
-          <option value={Status.PENDING}>Pending</option>
-          <option value={Status.IN_PROGRESS}>In Progress</option>
-          <option value={Status.COMPLETED}>Completed</option>
-          <option value={Status.CANCELED}>Cancelled</option>
-        </select>
-        <select
-          name="assignedToId"
-          id="assignedToId"
-          value={assignedToId}
-          onChange={(e) => setAssignedToId(e.target.value)}
-          disabled={userRole === "OPERATOR"}
-        >
-          <option value="">Select Operator</option>
-          {operators &&
-            operators.length > 0 &&
-            operators.map((operator) => (
-              <option key={operator.id} value={operator.id}>
-                {operator.username}
-              </option>
-            ))}
-        </select>
-        {userRole === "OPERATOR" && (
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 grid grid-cols-2 gap-2"
+      >
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="productName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Product Name
+          </label>
+          <input
+            type="text"
+            name="productName"
+            id="productName"
+            placeholder="Product Name"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            disabled={userRole === "OPERATOR"}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300 disabled:bg-gray-100"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="quantity"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Quantity
+          </label>
           <input
             type="number"
-            value={quantityChanged}
-            onChange={(e) => setQuantityChanged(Number(e.target.value))}
-            placeholder="Quantity Completed"
+            name="quantity"
+            id="quantity"
+            placeholder="Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            disabled={userRole === "OPERATOR"}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300 disabled:bg-gray-100"
           />
+        </div>
+
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="deadline"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Deadline
+          </label>
+          <input
+            type="date"
+            name="deadline"
+            id="deadline"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            disabled={userRole === "OPERATOR"}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300 disabled:bg-gray-100"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="status"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Status
+          </label>
+          <select
+            name="status"
+            id="status"
+            value={status}
+            onChange={handleStatusChange}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300"
+          >
+            <option value={Status.PENDING}>Pending</option>
+            <option value={Status.IN_PROGRESS}>In Progress</option>
+            <option value={Status.COMPLETED}>Completed</option>
+            <option value={Status.CANCELED}>Cancelled</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="assignedToId"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Assigned To
+          </label>
+          <select
+            name="assignedToId"
+            id="assignedToId"
+            value={assignedToId}
+            onChange={(e) => setAssignedToId(e.target.value)}
+            disabled={userRole === "OPERATOR"}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300 disabled:bg-gray-100"
+          >
+            <option value="">Select Operator</option>
+            {operators &&
+              operators.length > 0 &&
+              operators.map((operator) => (
+                <option key={operator.id} value={operator.id}>
+                  {operator.username}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        {userRole === "OPERATOR" && (
+          <div className="grid grid-cols-1 gap-2">
+            <label
+              htmlFor="quantityChanged"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Quantity Completed
+            </label>
+            <input
+              type="number"
+              value={quantityChanged}
+              onChange={(e) => setQuantityChanged(Number(e.target.value))}
+              placeholder="Quantity Completed"
+              className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300"
+            />
+          </div>
         )}
-        <input
-          type="text"
-          name="progressNotes"
-          id="progressNotes"
-          placeholder="Progress Note"
-          value={progressNotes}
-          onChange={(e) => setProgressNotes(e.target.value)}
-        />
-        <button type="submit">Update Work Order</button>
-        <button type="button" onClick={onClose}>
-          Cancel
-        </button>
+
+        <div className="grid grid-cols-1 gap-2">
+          <label
+            htmlFor="progressNotes"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Progress Note
+          </label>
+          <input
+            type="text"
+            name="progressNotes"
+            id="progressNotes"
+            placeholder="Progress Note"
+            value={progressNotes}
+            onChange={(e) => setProgressNotes(e.target.value)}
+            className="mt-1 p-2 w-full border rounded-md focus:ring focus:ring-indigo-200 focus:border-indigo-300"
+          />
+        </div>
+
+        <div className="flex justify-end space-x-2 mt-4">
+          <button
+            type="submit"
+            className="px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm" // Menambahkan text-sm
+          >
+            Update Work Order
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm" // Menambahkan text-sm
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -189,6 +189,7 @@ export default function WorkOrders() {
   const [editWorkOrder, setEditWorkOrder] = useState<WorkOrder | null>(null);
   const [showAddWorkOrder, setShowAddWorkOrder] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -283,9 +284,11 @@ export default function WorkOrders() {
 
   const handleEditWorkOrder = (workOrder: WorkOrder) => {
     setEditWorkOrder(workOrder);
+    setIsEditModalOpen(true);
   };
 
   const handleEditClose = () => {
+    setIsEditModalOpen(false);
     setEditWorkOrder(null);
   };
 
