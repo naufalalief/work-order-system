@@ -41,8 +41,27 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
   onWorkOrderUpdated,
   onEditWorkOrder,
 }) => {
+  const [userRole, setUserRole] = useState<string>("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token) as JwtPayload & { role: string };
+        setUserRole(decodedToken.role);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, []);
+
   const handleDelete = async (order: WorkOrder) => {
     try {
+      if (userRole === Role.OPERATOR) {
+        alert("Operator cannot delete work order data!");
+        return;
+      }
+
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("Unauthorized");
@@ -89,16 +108,37 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
     return "N/A";
   };
 
+  const [expandedNotes, setExpandedNotes] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  const toggleNotes = (id: number) => {
+    setExpandedNotes({
+      ...expandedNotes,
+      [id]: !expandedNotes[id],
+    });
+  };
+
+  const truncateNotes = (notes: string[], id: number) => {
+    const allNotes = notes.join(", ");
+    if (expandedNotes[id]) {
+      return allNotes;
+    }
+    return allNotes.length > 25 ? allNotes.substring(0, 25) + "..." : allNotes;
+  };
+
   return (
-    <table className="border border-gray-300 rounded-md p-2 w-full max-w-4xl">
+    <table className="border border-gray-300 rounded-md p-2 w-full ">
       <thead className="bg-gray-200 text-left">
         <tr className="border-b border-gray-300">
-          <th className="space-x-4">Work Order Number</th>
+          <th className="space-x-4">WO Number</th>
           <th className="space-x-4">Product Name</th>
           <th className="space-x-4">Quantity</th>
           <th className="space-x-4">Deadline</th>
           <th className="space-x-4">Status</th>
-          <th className="space-x-4">Assigned To</th>
+          {userRole !== "OPERATOR" && (
+            <th className="space-x-4">Assigned To</th>
+          )}
           <th className="space-x-4">Progress Notes</th>
           <th className="space-x-4">Quantity Completed</th>
           <th className="space-x-4">Action</th>
@@ -114,15 +154,24 @@ const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
               {new Date(order.deadline).toLocaleDateString()}
             </td>
             <td className="space-x-4">{order.status}</td>
-            <td className="space-x-4">
-              {order.assignedTo?.username || "Unassigned"}
+            {userRole !== "OPERATOR" && (
+              <td className="space-x-4">
+                {order.assignedTo?.username || "Unassigned"}
+              </td>
+            )}
+            <td
+              className="space-x-4 cursor-pointer"
+              onClick={() => toggleNotes(order.id)}
+            >
+              {truncateNotes(order.progressNotes, order.id)}
             </td>
-            <td className="space-x-4">{order.progressNotes.join(", ")}</td>
             <td className="space-x-4">
               {getLatestQuantityCompleted(order.statusHistory)}
             </td>
             <td>
-              <button onClick={() => handleDelete(order)}>Delete</button>
+              {userRole !== "OPERATOR" && (
+                <button onClick={() => handleDelete(order)}>Delete</button>
+              )}
               <button onClick={() => handleEdit(order)}>Edit</button>
             </td>
           </tr>
@@ -252,9 +301,11 @@ export default function WorkOrders() {
           <h1 className="text-4xl font-bold mb-4 cursor-pointer">
             Work Orders
           </h1>
-          <button onClick={handleToggleAddWorkOrder}>
-            {showAddWorkOrder ? "Hide Add Work Order" : "Add Work Order"}
-          </button>
+          {userRole !== "OPERATOR" && (
+            <button onClick={handleToggleAddWorkOrder}>
+              {showAddWorkOrder ? "Hide Add Work Order" : "Add Work Order"}
+            </button>
+          )}
           <WorkOrderTable
             workOrders={workOrders}
             onWorkOrderUpdated={handleWorkOrderUpdated}

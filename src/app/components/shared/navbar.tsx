@@ -81,7 +81,7 @@ const Navbar = () => {
 
   return (
     <section className="bg-gray-800 text-white w-full">
-      <nav className="flex justify-between items-center p-4 max-w-3xl mx-auto">
+      <nav className="flex justify-between items-center p-4 max-w-5xl mx-auto">
         <ul className="flex space-x-4">
           <li>Orders</li>
           <li>Report</li>
@@ -97,9 +97,7 @@ const Navbar = () => {
               {userInfo.username ? (
                 <>
                   <DropdownMenuLabel className="capitalize">
-                    {userInfo.username}
-                    <Separator orientation="vertical" />
-                    {formatRole(userInfo.role)}
+                    {userInfo.username} | {formatRole(userInfo.role)}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
