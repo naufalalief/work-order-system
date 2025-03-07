@@ -47,9 +47,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
   const [assignedToId, setAssignedToId] = useState<string>(
     workOrder.assignedToId ? workOrder.assignedToId.toString() : ""
   );
-  const [progressNotes, setProgressNotes] = useState<string>(
-    workOrder.progressNotes.join(", ")
-  );
+  const [progressNotes, setProgressNotes] = useState("");
   const [operators, setOperators] = useState<Operator[]>([]);
   const [quantityChanged, setQuantityChanged] = useState<number>(0);
   const [userRole, setUserRole] = useState<string>("");
@@ -104,29 +102,20 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
         deadline: new Date(deadline),
         status,
         assignedToId: Number(assignedToId),
-        progressNotes: progressNotes.split(",").map((note) => note.trim()),
       };
 
+      const combinedProgressNotes = [
+        ...workOrder.progressNotes,
+        ...progressNotes
+          .split(",")
+          .map((note) => note.trim())
+          .filter((note) => note),
+      ];
+      updateData.progressNotes = combinedProgressNotes;
+
       if (userRole === "OPERATOR") {
-        if (
-          status === Status.IN_PROGRESS &&
-          workOrder.status === Status.PENDING
-        ) {
-          updateData = {
-            status,
-            quantityChanged,
-          };
-        } else if (
-          status === Status.COMPLETED &&
-          workOrder.status === Status.IN_PROGRESS
-        ) {
-          updateData = {
-            status,
-            quantityChanged,
-          };
-        } else {
-          throw new Error("Invalid status transition for operator.");
-        }
+        updateData.quantityChanged = quantityChanged;
+        updateData.progressNotes = combinedProgressNotes;
       }
 
       const response = await fetch(
@@ -217,26 +206,14 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
               </option>
             ))}
         </select>
-        {userRole === "OPERATOR" &&
-          status === Status.IN_PROGRESS &&
-          workOrder.status === Status.PENDING && (
-            <input
-              type="number"
-              value={quantityChanged}
-              onChange={(e) => setQuantityChanged(Number(e.target.value))}
-              placeholder="Quantity Started"
-            />
-          )}
-        {userRole === "OPERATOR" &&
-          status === Status.COMPLETED &&
-          workOrder.status === Status.IN_PROGRESS && (
-            <input
-              type="number"
-              value={quantityChanged}
-              onChange={(e) => setQuantityChanged(Number(e.target.value))}
-              placeholder="Quantity Completed"
-            />
-          )}
+        {userRole === "OPERATOR" && (
+          <input
+            type="number"
+            value={quantityChanged}
+            onChange={(e) => setQuantityChanged(Number(e.target.value))}
+            placeholder="Quantity Changed"
+          />
+        )}
         <input
           type="text"
           name="progressNotes"
