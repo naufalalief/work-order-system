@@ -152,3 +152,8 @@ Dokumentasi ini menjelaskan endpoint API yang tersedia.
 - Semua endpoint yang memerlukan otorisasi menggunakan token Bearer (JWT) yang dikirimkan di header `Authorization`.
 - Endpoint `/auth/register` secara otomatis memberikan peran "Operator" kepada pengguna baru.
 - Endpoint `/work-orders/` (GET) memerlukan otorisasi Bearer.
+
+## Env
+
+- DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+- secretkey = ""
