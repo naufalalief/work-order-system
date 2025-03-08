@@ -2,184 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Navbar from "../components/shared/navbar";
+import Navbar from "../components/shared/Navbar";
 import AddWorkOrder from "./add/page";
 import EditWorkOrder from "./edit/page";
-import { jwtDecode, JwtPayload } from "jwt-decode";
-import { Role } from "@prisma/client";
-
-interface WorkOrder {
-  id: number;
-  workOrderNumber: string;
-  productName: string;
-  quantity: number;
-  deadline: string;
-  status: string;
-  assignedTo?: {
-    username: string;
-  };
-  progressNotes: string[];
-  statusHistory: {
-    id: number;
-    workOrderId: number;
-    status: string;
-    startedAt: string;
-    completedAt: string | null;
-    progressNote: string | null;
-    quantityCompleted: number | null;
-  }[];
-}
-
-interface WorkOrderTableProps {
-  workOrders: WorkOrder[];
-  onWorkOrderUpdated: () => void;
-  onEditWorkOrder: (workOrder: WorkOrder) => void;
-}
-
-const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
-  workOrders,
-  onWorkOrderUpdated,
-  onEditWorkOrder,
-}) => {
-  const [userRole, setUserRole] = useState<string>("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token) as JwtPayload & { role: string };
-        setUserRole(decodedToken.role);
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    }
-  }, []);
-
-  const handleDelete = async (order: WorkOrder) => {
-    try {
-      if (userRole === Role.OPERATOR) {
-        alert("Operator cannot delete work order data!");
-        return;
-      }
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Unauthorized");
-      }
-
-      const response = await fetch(
-        `/api/work-orders/${order.workOrderNumber}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete work order");
-      }
-
-      onWorkOrderUpdated();
-    } catch (error) {
-      console.error("Error deleting work order:", error);
-      alert("Failed to delete work order");
-    }
-  };
-
-  const handleEdit = (order: WorkOrder) => {
-    onEditWorkOrder(order);
-  };
-
-  const getLatestQuantityCompleted = (
-    statusHistory: WorkOrder["statusHistory"]
-  ): string | number => {
-    if (!statusHistory || statusHistory.length === 0) {
-      return "N/A";
-    }
-
-    for (let i = statusHistory.length - 1; i >= 0; i--) {
-      if (statusHistory[i].quantityCompleted !== null) {
-        return statusHistory[i].quantityCompleted!;
-      }
-    }
-
-    return "N/A";
-  };
-
-  const [expandedNotes, setExpandedNotes] = useState<{
-    [key: number]: boolean;
-  }>({});
-
-  const toggleNotes = (id: number) => {
-    setExpandedNotes({
-      ...expandedNotes,
-      [id]: !expandedNotes[id],
-    });
-  };
-
-  const truncateNotes = (notes: string[], id: number) => {
-    const allNotes = notes.join(", ");
-    if (expandedNotes[id]) {
-      return allNotes;
-    }
-    return allNotes.length > 25 ? allNotes.substring(0, 25) + "..." : allNotes;
-  };
-
-  return (
-    <table className="border border-gray-300 rounded-md p-2 w-full ">
-      <thead className="bg-gray-200 text-left">
-        <tr className="border-b border-gray-300">
-          <th className="space-x-4">WO Number</th>
-          <th className="space-x-4">Product Name</th>
-          <th className="space-x-4">Quantity</th>
-          <th className="space-x-4">Deadline</th>
-          <th className="space-x-4">Status</th>
-          {userRole !== "OPERATOR" && (
-            <th className="space-x-4">Assigned To</th>
-          )}
-          <th className="space-x-4">Progress Notes</th>
-          <th className="space-x-4">Quantity Completed</th>
-          <th className="space-x-4">Action</th>
-        </tr>
-      </thead>
-      <tbody className="text-left">
-        {workOrders.map((order) => (
-          <tr key={order.id}>
-            <td className="space-x-4">{order.workOrderNumber}</td>
-            <td className="space-x-4">{order.productName}</td>
-            <td className="space-x-4">{order.quantity}</td>
-            <td className="space-x-4">
-              {new Date(order.deadline).toLocaleDateString()}
-            </td>
-            <td className="space-x-4">{order.status}</td>
-            {userRole !== "OPERATOR" && (
-              <td className="space-x-4">
-                {order.assignedTo?.username || "Unassigned"}
-              </td>
-            )}
-            <td
-              className="space-x-4 cursor-pointer"
-              onClick={() => toggleNotes(order.id)}
-            >
-              {truncateNotes(order.progressNotes, order.id)}
-            </td>
-            <td className="space-x-4">
-              {getLatestQuantityCompleted(order.statusHistory)}
-            </td>
-            <td>
-              {userRole !== "OPERATOR" && (
-                <button onClick={() => handleDelete(order)}>Delete</button>
-              )}
-              <button onClick={() => handleEdit(order)}>Edit</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-};
+import { jwtDecode } from "jwt-decode";
+import { DecodedToken, WorkOrder } from "@/utils/interfaces";
+import { WorkOrderTable } from "./table/WorkOrderTable";
 
 export default function WorkOrders() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
@@ -189,7 +17,7 @@ export default function WorkOrders() {
   const [editWorkOrder, setEditWorkOrder] = useState<WorkOrder | null>(null);
   const [showAddWorkOrder, setShowAddWorkOrder] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -199,12 +27,13 @@ export default function WorkOrders() {
     }
 
     try {
-      const decodedToken = jwtDecode(token) as JwtPayload & { role: Role };
+      const decodedToken = jwtDecode<DecodedToken>(token);
       const dateNow = new Date();
 
       if (decodedToken && decodedToken.exp) {
         if (decodedToken.exp * 1000 < dateNow.getTime()) {
           console.log("Session expired");
+          localStorage.removeItem("token");
           router.push("/");
           return;
         }
@@ -220,7 +49,7 @@ export default function WorkOrders() {
     }
   }, [router]);
 
-  const fetchWorkOrders = async (role: Role | null) => {
+  const fetchWorkOrders = async (role: string | null) => {
     setIsLoading(true);
     setFetchError(null);
     try {
@@ -275,21 +104,22 @@ export default function WorkOrders() {
   if (fetchError) return <div>Error: {fetchError}</div>;
 
   const handleRefresh = () => {
-    fetchWorkOrders(userRole as Role);
+    fetchWorkOrders(userRole as string);
   };
 
   const handleWorkOrderUpdated = () => {
-    fetchWorkOrders(userRole as Role);
+    fetchWorkOrders(userRole as string);
   };
 
   const handleEditWorkOrder = (workOrder: WorkOrder) => {
     setEditWorkOrder(workOrder);
-    setIsEditModalOpen(true);
+    setIsFormOpen(true);
   };
 
-  const handleEditClose = () => {
-    setIsEditModalOpen(false);
+  const handleClose = () => {
+    setIsFormOpen(false);
     setEditWorkOrder(null);
+    setShowAddWorkOrder(false);
   };
 
   const handleToggleAddWorkOrder = () => {
@@ -309,22 +139,25 @@ export default function WorkOrders() {
               {showAddWorkOrder ? "Hide Add Work Order" : "Add Work Order"}
             </button>
           )}
-          <WorkOrderTable
-            workOrders={workOrders}
-            onWorkOrderUpdated={handleWorkOrderUpdated}
-            onEditWorkOrder={handleEditWorkOrder}
-          />
           {showAddWorkOrder && (
-            <AddWorkOrder onWorkOrderAdded={handleRefresh} />
+            <AddWorkOrder
+              onWorkOrderAdded={handleRefresh}
+              onClose={handleClose}
+            />
           )}
           {editWorkOrder && (
             <EditWorkOrder
               key={editWorkOrder.id}
               workOrder={editWorkOrder}
-              onClose={handleEditClose}
+              onClose={handleClose}
               onWorkOrderUpdated={handleWorkOrderUpdated}
             />
           )}
+          <WorkOrderTable
+            workOrders={workOrders}
+            onWorkOrderUpdated={handleWorkOrderUpdated}
+            onEditWorkOrder={handleEditWorkOrder}
+          />
         </div>
       </section>
     </>

@@ -1,23 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Status } from "@prisma/client";
+import { AddWorkOrderProps, Operator } from "@/utils/interfaces";
+import { AddWorkOrderForm } from "../form/WorkOrderForm";
 
-interface Operator {
-  id: number;
-  username: string;
-}
-
-interface AddWorkOrderProps {
-  onWorkOrderAdded: () => void;
-}
-
-const AddWorkOrder: React.FC<AddWorkOrderProps> = ({ onWorkOrderAdded }) => {
+const AddWorkOrder: React.FC<AddWorkOrderProps> = ({
+  onClose,
+  onWorkOrderAdded,
+}) => {
   const [productName, setProductName] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [deadline, setDeadline] = useState("");
-  const [status, setStatus] = useState<Status>(Status.PENDING);
   const [assignedToId, setAssignedToId] = useState("");
   const [operators, setOperators] = useState<Operator[]>([]);
   const router = useRouter();
@@ -32,17 +27,16 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({ onWorkOrderAdded }) => {
         }
 
         const response = await fetch("/api/users?role=operator", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setOperators(data.users);
-        } else {
+        if (!response.ok) {
           console.error("Failed to fetch operators");
+          return;
         }
+
+        const { users } = await response.json();
+        setOperators(users);
       } catch (error) {
         console.error("Error fetching operators:", error);
       }
@@ -51,7 +45,7 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({ onWorkOrderAdded }) => {
     fetchOperators();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
@@ -60,88 +54,66 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({ onWorkOrderAdded }) => {
         throw new Error("Unauthorized");
       }
 
+      const payload = {
+        productName,
+        quantity: Number(quantity),
+        deadline: new Date(deadline),
+        status: Status.PENDING,
+        assignedToId: Number(assignedToId),
+      };
+
       const response = await fetch("/api/work-orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          productName,
-          quantity: Number(quantity),
-          deadline: new Date(deadline),
-          status,
-          assignedToId: Number(assignedToId),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add work order");
+        const { message } = await response.json();
+        throw new Error(message || "Failed to add work order");
       }
 
       onWorkOrderAdded();
       router.push("/work-orders");
-
-      setProductName("");
-      setQuantity(1);
-      setDeadline("");
-      setStatus(Status.PENDING);
-      setAssignedToId("");
+      resetForm();
     } catch (error: any) {
       console.error("Error adding work order:", error);
       alert(`Error adding work order: ${error.message}`);
     }
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedStatus = e.target.value as Status;
-    setStatus(selectedStatus);
+  const resetForm = () => {
+    setProductName("");
+    setQuantity(1);
+    setDeadline("");
+    setAssignedToId("");
+  };
+  const workOrder = {
+    productName,
+    quantity,
+    deadline,
+    assignedToId,
+    operators,
   };
 
   return (
-    <div>
-      <div>AddForm</div>
+    <div className="p-6 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+        Add Work Order
+      </h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="productName"
-          id="productName"
-          placeholder="Product Name"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-        />
-        <input
-          type="number"
-          name="quantity"
-          id="quantity"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-        />
-        <input
-          type="date"
-          name="deadline"
-          id="deadline"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-        />
-        <select
-          name="assignedToId"
-          id="assignedToId"
-          value={assignedToId}
-          onChange={(e) => setAssignedToId(e.target.value)}
-        >
-          <option value="">Select Operator</option>
-          {operators.map((operator) => (
-            <option key={operator.id} value={operator.id}>
-              {operator.username}
-            </option>
-          ))}
-        </select>
-        <button type="submit">Add Work Order</button>
-      </form>
+      <AddWorkOrderForm
+        workOrder={workOrder}
+        setProductName={setProductName}
+        setQuantity={setQuantity}
+        setDeadline={setDeadline}
+        setAssignedToId={setAssignedToId}
+        handleSubmit={handleSubmit}
+        onClose={onClose}
+      />
     </div>
   );
 };

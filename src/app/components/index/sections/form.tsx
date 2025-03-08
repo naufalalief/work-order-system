@@ -15,12 +15,8 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { authSchema } from "@/utils/schemas";
-import { jwtDecode } from "jwt-decode";
-
-interface FormToggleProps {
-  mode: "login" | "register";
-  setMode: React.Dispatch<React.SetStateAction<"login" | "register">>;
-}
+import { jwtDecode, JwtPayload } from "jwt-decode";
+import { FormToggleProps } from "@/utils/interfaces";
 
 const FormToggle: React.FC<FormToggleProps> = ({ mode, setMode }) => {
   return (
@@ -142,11 +138,27 @@ const FormPage = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      const decodedToken = jwtDecode(token);
-      if (decodedToken) {
-        router.push("/work-orders");
-      } else {
+      try {
+        const decodedToken = jwtDecode<JwtPayload>(token);
+        if (decodedToken && decodedToken.exp) {
+          const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+          if (decodedToken.exp > currentTime) {
+            // Token is valid, redirect to /work-orders
+            router.push("/work-orders");
+          } else {
+            // Token is expired, remove it
+            localStorage.removeItem("token");
+            console.log("Token expired and removed.");
+          }
+        } else {
+          // Token is invalid (missing exp), remove it
+          localStorage.removeItem("token");
+          console.log("Invalid token format, removed.");
+        }
+      } catch (error) {
+        // Token decoding failed, remove it
         localStorage.removeItem("token");
+        console.error("Error decoding token:", error);
       }
     }
   }, [router]);

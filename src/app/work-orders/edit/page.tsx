@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Status } from "@prisma/client";
 import { jwtDecode } from "jwt-decode";
+import { Input } from "@/components/ui/input";
 
 interface Operator {
   id: number;
@@ -51,7 +52,6 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
   const [operators, setOperators] = useState<Operator[]>([]);
   const [quantityChanged, setQuantityChanged] = useState<number>(0);
   const [userRole, setUserRole] = useState<string>("");
-  const router = useRouter();
 
   useEffect(() => {
     const fetchOperators = async () => {
@@ -153,7 +153,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
           >
             Product Name
           </label>
-          <input
+          <Input
             type="text"
             name="productName"
             id="productName"
@@ -172,7 +172,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
           >
             Quantity
           </label>
-          <input
+          <Input
             type="number"
             name="quantity"
             id="quantity"
@@ -191,7 +191,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
           >
             Deadline
           </label>
-          <input
+          <Input
             type="date"
             name="deadline"
             id="deadline"
@@ -257,7 +257,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
             >
               Quantity Completed
             </label>
-            <input
+            <Input
               type="number"
               value={quantityChanged}
               onChange={(e) => setQuantityChanged(Number(e.target.value))}
@@ -274,7 +274,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
           >
             Progress Note
           </label>
-          <input
+          <Input
             type="text"
             name="progressNotes"
             id="progressNotes"

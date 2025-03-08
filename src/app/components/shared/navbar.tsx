@@ -13,6 +13,7 @@ import { HamburgerMenuIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+import Link from "next/link";
 
 interface CustomJwtPayload extends JwtPayload {
   username: string;
@@ -83,8 +84,12 @@ const Navbar = () => {
     <section className="bg-gray-800 text-white w-full">
       <nav className="flex justify-between items-center p-4 max-w-5xl mx-auto">
         <ul className="flex space-x-4">
-          <li>Orders</li>
-          <li>Report</li>
+          <li>
+            <Link href={"/work-orders"}>Orders</Link>
+          </li>
+          <li>
+            <Link href={"/reports"}>Report</Link>
+          </li>
         </ul>
         <div className="relative flex space-x-4 items-center text-black">
           <DropdownMenu>

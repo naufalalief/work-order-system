@@ -1,5 +1,5 @@
-import Navbar from "../shared/navbar";
-import FormPage from "./sections/form";
+import Navbar from "../shared/Navbar";
+import FormPage from "./sections/Form";
 
 export function IndexPage() {
   return (
