@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { authSchema } from "@/utils/schemas";
 import { jwtDecode, JwtPayload } from "jwt-decode";
-import { FormToggleProps } from "@/utils/interfaces";
+import { FormToggleProps, LoginFormProps } from "@/utils/interfaces";
 
 const FormToggle: React.FC<FormToggleProps> = ({ mode, setMode }) => {
   return (
@@ -36,12 +36,6 @@ const FormToggle: React.FC<FormToggleProps> = ({ mode, setMode }) => {
     </div>
   );
 };
-
-interface LoginFormProps {
-  form: any;
-  handleSubmit: (values: z.infer<typeof authSchema>) => Promise<void>;
-  mode: "login" | "register";
-}
 
 const LoginForm: React.FC<LoginFormProps> = ({ form, handleSubmit, mode }) => {
   return (

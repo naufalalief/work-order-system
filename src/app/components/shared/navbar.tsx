@@ -14,17 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import Link from "next/link";
-
-interface CustomJwtPayload extends JwtPayload {
-  username: string;
-  role: string;
-}
-
-interface UserInfo {
-  username: string | null;
-  role: string | null;
-}
-
+import { CustomJwtPayload } from "@/utils/interfaces";
+import { UserInfo } from "@/utils/interfaces";
 const Navbar = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
     username: null,

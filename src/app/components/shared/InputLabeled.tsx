@@ -1,24 +1,9 @@
-import { Operator } from "@/utils/interfaces";
+import {
+  InputLabeledProps,
+  Operator,
+  SelectLabeledProps,
+} from "@/utils/interfaces";
 import React from "react";
-
-interface InputLabeledProps {
-  label: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  type: "text" | "number" | "date";
-  placeholder?: string;
-  disabled?: boolean;
-}
-interface SelectLabeledProps<T> {
-  label: string;
-  value: string;
-  disabled?: boolean;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options?: T[];
-  optionLabelKey: keyof T;
-  optionValueKey: keyof T;
-  defaultOptionLabel?: string;
-}
 
 export const LabeledInput: React.FC<InputLabeledProps> = ({
   label,

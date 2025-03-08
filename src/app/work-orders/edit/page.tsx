@@ -5,34 +5,9 @@ import { useRouter } from "next/navigation";
 import { Status } from "@prisma/client";
 import { jwtDecode } from "jwt-decode";
 import { Input } from "@/components/ui/input";
-
-interface Operator {
-  id: number;
-  username: string;
-}
-
-interface EditWorkOrderProps {
-  workOrder: {
-    id: number;
-    workOrderNumber: string;
-    productName: string;
-    quantity: number;
-    deadline: string;
-    status: string;
-    assignedToId?: number | null;
-    progressNotes: string[];
-  };
-  onClose: () => void;
-  onWorkOrderUpdated: () => void;
-}
-
-interface DecodedToken {
-  userId: number;
-  username: string;
-  role: string;
-  iat: number;
-  exp: number;
-}
+import { EditWorkOrderProps } from "@/utils/interfaces";
+import { DecodedToken } from "@/utils/interfaces";
+import { Operator } from "@/utils/interfaces";
 
 const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
   workOrder,
