@@ -80,7 +80,10 @@ const editWorkOrder = async (
       },
     });
 
-    if (currentWorkOrder?.assignedToId !== user.userId) {
+    if (
+      user.role === Role.OPERATOR &&
+      currentWorkOrder?.assignedToId !== user.userId
+    ) {
       return res.status(403).json({
         message: "Forbidden: You are not allowed to edit this work order.",
       });
