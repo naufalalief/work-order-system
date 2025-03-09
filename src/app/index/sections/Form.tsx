@@ -109,7 +109,8 @@ const FormPage = () => {
           localStorage.setItem("token", data.token);
           router.push("/work-orders");
         } else {
-          router.push("/");
+          alert("Registration successful! Please log in.");
+          setMode("login");
         }
       } else {
         const errorData = await response.json();
