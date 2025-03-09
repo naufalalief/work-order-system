@@ -1,7 +1,4 @@
-import {
-  LabeledInput,
-  LabeledSelect,
-} from "@/app/components/shared/InputLabeled";
+import { LabeledInput, LabeledSelect } from "@/components/ui/InputLabeled";
 import { Input } from "@/components/ui/input";
 import {
   AddWorkOrderFormProps,

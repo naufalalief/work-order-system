@@ -171,3 +171,20 @@ export interface DecodedToken {
   iat: number;
   exp: number;
 }
+
+export interface OperatorReport {
+  operatorName: string;
+  report: {
+    productName: string;
+    totalQuantity: number;
+  }[];
+}
+
+export interface ProductReportItem {
+  productName: string;
+  PENDING: number;
+  IN_PROGRESS: number;
+  COMPLETED: number;
+  CANCELED: number;
+  totalQuantity: number;
+}

@@ -1,29 +1,13 @@
-"use client"; // Mark as Client Component
+"use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Import from next/navigation
-import { jwtDecode, JwtPayload } from "jwt-decode";
-import Navbar from "../components/shared/Navbar";
-
-interface DecodedToken extends JwtPayload {
-  role: string;
-}
-
-interface OperatorReport {
-  operatorName: string;
-  report: {
-    productName: string;
-    totalQuantity: number;
-  }[];
-}
-
-interface ProductReportItem {
-  productName: string;
-  PENDING: number;
-  IN_PROGRESS: number;
-  COMPLETED: number;
-  CANCELED: number;
-  totalQuantity: number;
-}
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import Navbar from "../../components/ui/Navbar";
+import {
+  DecodedToken,
+  OperatorReport,
+  ProductReportItem,
+} from "@/utils/interfaces";
 
 const ReportsPage = () => {
   const [operatorReports, setOperatorReports] = useState<OperatorReport[]>([]);
@@ -31,12 +15,13 @@ const ReportsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const router = useRouter(); // Use useRouter from next/navigation
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/login"); // Redirect if no token
+      alert("You need to login first");
+      router.push("/");
       return;
     }
 
@@ -46,21 +31,21 @@ const ReportsPage = () => {
         const currentTime = Math.floor(Date.now() / 1000);
         if (decodedToken.exp > currentTime) {
           if (decodedToken.role !== "PRODUCTION_MANAGER") {
-            router.push("/"); // Redirect if not authorized
+            router.push("/");
             return;
           }
           fetchReports(userRole as string);
         } else {
           localStorage.removeItem("token");
-          router.push("/login"); // Redirect if token expired
+          router.push("/login");
         }
       } else {
         localStorage.removeItem("token");
-        router.push("/login"); // Redirect if invalid token
+        router.push("/login");
       }
     } catch (err) {
       localStorage.removeItem("token");
-      router.push("/login"); // Redirect if decoding fails
+      router.push("/login");
     }
   }, [router]);
 
@@ -115,65 +100,41 @@ const ReportsPage = () => {
       <section className="container mx-auto p-8">
         <div className="flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold mb-4 cursor-pointer">Reports</h1>
+          <OperatorSummaryReport operatorReports={operatorReports} />
+          <ProductSummaryReport productReports={productReports} />
+        </div>
+      </section>
+    </>
+  );
+};
 
-          <h2>Operator Summary Reports</h2>
-          {operatorReports.map((opReport) => (
-            <div key={opReport.operatorName} className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">
-                {opReport.operatorName}
-              </h3>
-              <table className="w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2">Product Name</th>
-                    <th className="border border-gray-300 p-2">
-                      Total Quantity
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {opReport.report.map((item) => (
-                    <tr key={item.productName}>
-                      <td className="border border-gray-300 p-2">
-                        {item.productName}
-                      </td>
-                      <td className="border border-gray-300 p-2">
-                        {item.totalQuantity}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
+export default ReportsPage;
 
-          <h2>Product Summary Reports</h2>
+export const OperatorSummaryReport = ({
+  operatorReports,
+}: {
+  operatorReports: OperatorReport[];
+}) => {
+  return (
+    <div>
+      <h2>Operator Summary Reports</h2>
+      {operatorReports.map((opReport) => (
+        <div key={opReport.operatorName} className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">
+            {opReport.operatorName}
+          </h3>
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 p-2">Product Name</th>
-                <th className="border border-gray-300 p-2">Pending</th>
-                <th className="border border-gray-300 p-2">In Progress</th>
-                <th className="border border-gray-300 p-2">Completed</th>
-                <th className="border border-gray-300 p-2">Canceled</th>
                 <th className="border border-gray-300 p-2">Total Quantity</th>
               </tr>
             </thead>
             <tbody>
-              {productReports.map((item) => (
+              {opReport.report.map((item) => (
                 <tr key={item.productName}>
                   <td className="border border-gray-300 p-2">
                     {item.productName}
-                  </td>
-                  <td className="border border-gray-300 p-2">{item.PENDING}</td>
-                  <td className="border border-gray-300 p-2">
-                    {item.IN_PROGRESS}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {item.COMPLETED}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {item.CANCELED}
                   </td>
                   <td className="border border-gray-300 p-2">
                     {item.totalQuantity}
@@ -183,9 +144,45 @@ const ReportsPage = () => {
             </tbody>
           </table>
         </div>
-      </section>
-    </>
+      ))}
+    </div>
   );
 };
 
-export default ReportsPage;
+export const ProductSummaryReport = ({
+  productReports,
+}: {
+  productReports: ProductReportItem[];
+}) => {
+  return (
+    <div>
+      <h2>Product Summary Reports</h2>
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 p-2">Product Name</th>
+            <th className="border border-gray-300 p-2">Pending</th>
+            <th className="border border-gray-300 p-2">In Progress</th>
+            <th className="border border-gray-300 p-2">Completed</th>
+            <th className="border border-gray-300 p-2">Canceled</th>
+            <th className="border border-gray-300 p-2">Total Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productReports.map((item) => (
+            <tr key={item.productName}>
+              <td className="border border-gray-300 p-2">{item.productName}</td>
+              <td className="border border-gray-300 p-2">{item.PENDING}</td>
+              <td className="border border-gray-300 p-2">{item.IN_PROGRESS}</td>
+              <td className="border border-gray-300 p-2">{item.COMPLETED}</td>
+              <td className="border border-gray-300 p-2">{item.CANCELED}</td>
+              <td className="border border-gray-300 p-2">
+                {item.totalQuantity}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};

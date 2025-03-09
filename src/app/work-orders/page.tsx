@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Navbar from "../components/shared/Navbar";
+import Navbar from "../../components/ui/Navbar";
 import AddWorkOrder from "./add/page";
 import EditWorkOrder from "./edit/page";
 import { jwtDecode } from "jwt-decode";
