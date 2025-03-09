@@ -55,13 +55,9 @@ export interface WorkOrderTableProps {
   onEditWorkOrder: (workOrder: WorkOrder) => void;
 }
 
-export interface DecodedToken extends JwtPayload {
-  role: string;
-}
-
 export interface WorkOrderRowProps {
   order: WorkOrder;
-  userRole: string;
+  userRole: string | null;
   handleDelete: (order: WorkOrder) => void;
   handleEdit: (order: WorkOrder) => void;
 }
@@ -97,22 +93,7 @@ export interface FormToggleProps {
   setMode: React.Dispatch<React.SetStateAction<"login" | "register">>;
 }
 
-export interface EditWorkOrderProps {
-  workOrder: {
-    id: number;
-    workOrderNumber: string;
-    productName: string;
-    quantity: number;
-    deadline: string;
-    status: string;
-    assignedToId?: number | null;
-    progressNotes: string[];
-  };
-  onClose: () => void;
-  onWorkOrderUpdated: () => void;
-}
-
-export interface DecodedToken {
+export interface DecodedToken extends JwtPayload {
   userId: number;
   username: string;
   role: string;
@@ -162,14 +143,6 @@ export interface EditWorkOrderProps {
   };
   onClose: () => void;
   onWorkOrderUpdated: () => void;
-}
-
-export interface DecodedToken {
-  userId: number;
-  username: string;
-  role: string;
-  iat: number;
-  exp: number;
 }
 
 export interface OperatorReport {

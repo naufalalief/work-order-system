@@ -1,100 +1,48 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import Navbar from "../../components/ui/Navbar";
-import {
-  DecodedToken,
-  OperatorReport,
-  ProductReportItem,
-} from "@/utils/interfaces";
+import { OperatorReport, ProductReportItem } from "@/utils/interfaces";
 import { ProductSummaryReport } from "./sections/ProductSummaryReport";
 import { OperatorSummaryReport } from "./sections/OperatorSummaryReport";
+import { useAuthentication } from "@/hooks/useAuth";
+import { useOperators } from "@/hooks/useOperator";
+import { useReports } from "@/hooks/useReport";
 
 const ReportsPage = () => {
-  const [operatorReports, setOperatorReports] = useState<OperatorReport[]>([]);
-  const [productReports, setProductReports] = useState<ProductReportItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const router = useRouter();
+  const [assignedToId, setAssignedToId] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("You need to login first");
-      router.push("/");
-      return;
-    }
+    setToken(localStorage.getItem("token"));
+  }, []);
 
-    try {
-      const decodedToken = jwtDecode<DecodedToken>(token);
-      if (decodedToken && decodedToken.exp) {
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (decodedToken.exp > currentTime) {
-          if (decodedToken.role !== "PRODUCTION_MANAGER") {
-            router.push("/");
-            return;
-          }
-          fetchReports(userRole as string);
-        } else {
-          localStorage.removeItem("token");
-          router.push("/login");
-        }
-      } else {
-        localStorage.removeItem("token");
-        router.push("/login");
-      }
-    } catch (err) {
-      localStorage.removeItem("token");
-      router.push("/login");
-    }
-  }, [router]);
+  const isAuthenticated = useAuthentication({
+    allowedRoles: ["PRODUCTION_MANAGER"],
+    setUserRole,
+    redirectTo: "/login",
+  });
 
-  const fetchReports = async (role: string | null) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Unauthorized");
-        router.push("/");
-        return;
-      }
-      const operatorRes = await fetch("/api/reports/operator-summary", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-User-Role": role || "",
-        },
-      });
-      const productRes = await fetch("/api/reports/work-order-summary", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-User-Role": role || "",
-        },
-      });
+  const {
+    operators,
+    loading: operatorsLoading,
+    error: operatorsError,
+  } = useOperators(token, setAssignedToId);
+  const {
+    operatorReports,
+    productReports,
+    loading: reportsLoading,
+    error: reportsError,
+  } = useReports(token);
 
-      if (!operatorRes.ok || !productRes.ok) {
-        throw new Error("Failed to fetch reports");
-      }
+  if (!isAuthenticated) return null;
 
-      const operatorData = await operatorRes.json();
-      const productData = await productRes.json();
+  if (operatorsLoading || reportsLoading) return <div>Loading reports...</div>;
+  if (operatorsError || reportsError)
+    return <div>Error: {operatorsError || reportsError}</div>;
 
-      setOperatorReports(operatorData.reports);
-      setProductReports(productData.report);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to load reports.");
-      setLoading(false);
-      console.error("Error fetching reports:", err);
-    }
-  };
-
-  if (loading) return <div>Loading reports...</div>;
-  if (error) return <div>{error}</div>;
+  if (!operatorReports || !productReports)
+    return <div>No reports available.</div>;
 
   return (
     <>

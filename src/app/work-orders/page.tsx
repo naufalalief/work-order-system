@@ -1,114 +1,43 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/ui/Navbar";
 import AddWorkOrder from "./add/page";
 import EditWorkOrder from "./edit/page";
-import { jwtDecode } from "jwt-decode";
-import { DecodedToken, WorkOrder } from "@/utils/interfaces";
+import { WorkOrder } from "@/utils/interfaces";
 import { WorkOrderTable } from "./table/WorkOrderTable";
+import { useAuthentication } from "@/hooks/useAuth";
+import { useWorkOrders } from "@/hooks/useWorkOrder";
 
 export default function WorkOrders() {
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const router = useRouter();
   const [editWorkOrder, setEditWorkOrder] = useState<WorkOrder | null>(null);
   const [showAddWorkOrder, setShowAddWorkOrder] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null); // Initialize token as null
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/");
-      return;
-    }
+    // This will run only on the client-side
+    setToken(localStorage.getItem("token"));
+  }); // Empty dependency array ensures this runs only once after mount
 
-    try {
-      const decodedToken = jwtDecode<DecodedToken>(token);
-      const dateNow = new Date();
+  const isAuthenticated = useAuthentication({
+    allowedRoles: ["PRODUCTION_MANAGER", "OPERATOR"],
+    setUserRole,
+    redirectTo: "/login",
+  });
 
-      if (decodedToken && decodedToken.exp) {
-        if (decodedToken.exp * 1000 < dateNow.getTime()) {
-          console.log("Session expired");
-          localStorage.removeItem("token");
-          router.push("/");
-          return;
-        }
-        setUserRole(decodedToken.role);
-        fetchWorkOrders(decodedToken.role);
-      } else {
-        console.log("Token invalid or exp missing");
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Token error:", error);
-      router.push("/");
-    }
-  }, [router]);
+  const { workOrders, loading, error, refresh } = useWorkOrders(token);
 
-  const fetchWorkOrders = async (role: string | null) => {
-    setIsLoading(true);
-    setFetchError(null);
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setFetchError("Unauthorized");
-        router.push("/");
-        return;
-      }
-      const response = await fetch("/api/work-orders", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-User-Role": role || "",
-        },
-      });
+  if (!isAuthenticated) return null;
 
-      if (!response.ok) {
-        let errorMessage = "Failed to fetch work orders";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
-        }
-        setFetchError(errorMessage);
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Data:", data);
-
-      if (data && Array.isArray(data.data)) {
-        setWorkOrders(data.data);
-      } else {
-        console.error("Invalid data format:", data);
-        setWorkOrders([]);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setFetchError(error.message);
-      } else {
-        setFetchError("An unexpected error occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (isLoading) return <div>Loading...</div>;
-  if (fetchError) return <div>Error: {fetchError}</div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   const handleRefresh = () => {
-    fetchWorkOrders(userRole as string);
-  };
-
-  const handleWorkOrderUpdated = () => {
-    fetchWorkOrders(userRole as string);
+    refresh();
+    handleClose();
   };
 
   const handleEditWorkOrder = (workOrder: WorkOrder) => {
@@ -150,14 +79,16 @@ export default function WorkOrders() {
               key={editWorkOrder.id}
               workOrder={editWorkOrder}
               onClose={handleClose}
-              onWorkOrderUpdated={handleWorkOrderUpdated}
+              onWorkOrderUpdated={handleRefresh}
             />
           )}
-          <WorkOrderTable
-            workOrders={workOrders}
-            onWorkOrderUpdated={handleWorkOrderUpdated}
-            onEditWorkOrder={handleEditWorkOrder}
-          />
+          {workOrders && (
+            <WorkOrderTable
+              workOrders={workOrders}
+              onWorkOrderUpdated={handleRefresh}
+              onEditWorkOrder={handleEditWorkOrder}
+            />
+          )}
         </div>
       </section>
     </>

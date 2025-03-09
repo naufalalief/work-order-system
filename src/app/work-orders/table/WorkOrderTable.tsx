@@ -1,10 +1,5 @@
-import {
-  DecodedToken,
-  WorkOrder,
-  WorkOrderTableProps,
-} from "@/utils/interfaces";
-import { jwtDecode } from "jwt-decode";
-import { useEffect, useState } from "react";
+import { WorkOrder, WorkOrderTableProps } from "@/utils/interfaces";
+import { useAuthentication } from "@/hooks/useAuth";
 import WorkOrderRow from "./WorkOrderRow";
 
 export const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
@@ -12,19 +7,9 @@ export const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
   onWorkOrderUpdated,
   onEditWorkOrder,
 }) => {
-  const [userRole, setUserRole] = useState<string>("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode<DecodedToken>(token);
-        setUserRole(decodedToken.role);
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    }
-  }, []);
+  const { userRole } = useAuthentication({
+    allowedRoles: ["PRODUCTION_MANAGER", "PRODUCTION_SUPERVISOR", "OPERATOR"],
+  });
 
   const handleDelete = async (order: WorkOrder) => {
     try {
@@ -47,12 +32,10 @@ export const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
           },
         }
       );
-
+      onWorkOrderUpdated();
       if (!response.ok) {
         throw new Error("Failed to delete work order");
       }
-
-      onWorkOrderUpdated();
     } catch (error) {
       console.error("Error deleting work order:", error);
       alert("Failed to delete work order");
