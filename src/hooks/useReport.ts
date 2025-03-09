@@ -1,6 +1,4 @@
-// useReports.ts
 import { useState, useEffect } from "react";
-import { JwtPayload } from "jwt-decode";
 
 export const useReports = (token: string | null) => {
   const [operatorReports, setOperatorReports] = useState<any>(null);

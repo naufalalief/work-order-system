@@ -136,22 +136,18 @@ const FormPage = () => {
       try {
         const decodedToken = jwtDecode<JwtPayload>(token);
         if (decodedToken && decodedToken.exp) {
-          const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+          const currentTime = Math.floor(Date.now() / 1000);
           if (decodedToken.exp > currentTime) {
-            // Token is valid, redirect to /work-orders
             router.push("/work-orders");
           } else {
-            // Token is expired, remove it
             localStorage.removeItem("token");
             console.log("Token expired and removed.");
           }
         } else {
-          // Token is invalid (missing exp), remove it
           localStorage.removeItem("token");
           console.log("Invalid token format, removed.");
         }
       } catch (error) {
-        // Token decoding failed, remove it
         localStorage.removeItem("token");
         console.error("Error decoding token:", error);
       }

@@ -1,4 +1,3 @@
-// useAuth.ts
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { jwtDecode, JwtPayload } from "jwt-decode";

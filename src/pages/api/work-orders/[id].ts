@@ -11,7 +11,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { id } = req.query;
-  console.log("Work Order Number: ", id);
 
   if (req.method === "GET") {
     try {

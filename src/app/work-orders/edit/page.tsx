@@ -246,14 +246,14 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
         <div className="flex justify-end space-x-2 mt-4">
           <button
             type="submit"
-            className="px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm" // Menambahkan text-sm
+            className="px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm"
           >
             Update Work Order
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm" // Menambahkan text-sm
+            className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring focus:ring-indigo-200 transition duration-300 ease-in-out text-sm"
           >
             Cancel
           </button>

@@ -9,7 +9,6 @@ const createWorkOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await verifyAdmin(req, res, async () => {
       const payload = (req as any).payload;
-      console.log(payload);
 
       const workOrderData = workOrderSchema.parse(req.body);
 
