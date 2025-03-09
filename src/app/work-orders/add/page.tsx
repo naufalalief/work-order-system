@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Status } from "@prisma/client";
-import { AddWorkOrderProps, Operator } from "@/utils/interfaces";
+import { AddWorkOrderProps } from "@/utils/interfaces";
 import { AddWorkOrderForm } from "../form/WorkOrderForm";
+import { useAuthentication } from "@/hooks/useAuth";
+import { useOperators } from "@/hooks/useOperator";
 
 const AddWorkOrder: React.FC<AddWorkOrderProps> = ({
   onClose,
@@ -14,42 +16,23 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [deadline, setDeadline] = useState("");
   const [assignedToId, setAssignedToId] = useState("");
-  const [operators, setOperators] = useState<Operator[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchOperators = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found. User not authenticated.");
-          return;
-        }
+  const { userRole } = useAuthentication({
+    allowedRoles: ["PRODUCTION_MANAGER", "OPERATOR"],
+  });
 
-        const response = await fetch("/api/users?role=operator", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  const token = localStorage.getItem("token");
 
-        if (!response.ok) {
-          console.error("Failed to fetch operators");
-          return;
-        }
+  const { operators, loading, error } = useOperators(token, setAssignedToId);
 
-        const { users } = await response.json();
-        setOperators(users);
-      } catch (error) {
-        console.error("Error fetching operators:", error);
-      }
-    };
-
-    fetchOperators();
-  }, []);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("Unauthorized");
       }
@@ -91,6 +74,7 @@ const AddWorkOrder: React.FC<AddWorkOrderProps> = ({
     setDeadline("");
     setAssignedToId("");
   };
+
   const workOrder = {
     productName,
     quantity,

@@ -21,7 +21,7 @@ export const useAuthentication = ({
 }: UseAuthenticationOptions = {}) => {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRoleState] = useState<string | null>(null); // Add userRole state
+  const [userRole, setUserRoleState] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -37,7 +37,7 @@ export const useAuthentication = ({
             ) {
               router.push(redirectTo);
             } else {
-              setUserRoleState(decodedToken.role); // Set userRole state
+              setUserRoleState(decodedToken.role);
               setIsAuthenticated(true);
             }
           } else {
@@ -57,5 +57,5 @@ export const useAuthentication = ({
     }
   }, [router, allowedRoles, redirectTo]);
 
-  return { isAuthenticated, userRole }; // Return isAuthenticated and userRole
+  return { isAuthenticated, userRole };
 };

@@ -8,7 +8,7 @@ export const WorkOrderTable: React.FC<WorkOrderTableProps> = ({
   onEditWorkOrder,
 }) => {
   const { userRole } = useAuthentication({
-    allowedRoles: ["PRODUCTION_MANAGER", "PRODUCTION_SUPERVISOR", "OPERATOR"],
+    allowedRoles: ["PRODUCTION_MANAGER", "OPERATOR"],
   });
 
   const handleDelete = async (order: WorkOrder) => {

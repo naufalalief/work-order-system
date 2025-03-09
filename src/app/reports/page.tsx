@@ -20,7 +20,7 @@ const ReportsPage = () => {
   const isAuthenticated = useAuthentication({
     allowedRoles: ["PRODUCTION_MANAGER"],
     setUserRole,
-    redirectTo: "/login",
+    redirectTo: "/work-orders",
   });
 
   const {

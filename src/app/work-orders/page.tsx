@@ -15,19 +15,16 @@ export default function WorkOrders() {
   const [showAddWorkOrder, setShowAddWorkOrder] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null); // Initialize token as null
-
+  const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
-    // This will run only on the client-side
     setToken(localStorage.getItem("token"));
-  }); // Empty dependency array ensures this runs only once after mount
+  });
 
   const isAuthenticated = useAuthentication({
     allowedRoles: ["PRODUCTION_MANAGER", "OPERATOR"],
     setUserRole,
-    redirectTo: "/login",
+    redirectTo: "/",
   });
-
   const { workOrders, loading, error, refresh } = useWorkOrders(token);
 
   if (!isAuthenticated) return null;
@@ -60,10 +57,8 @@ export default function WorkOrders() {
       <Navbar />
       <section className="container mx-auto p-8">
         <div className="flex flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold mb-4 cursor-pointer">
-            Work Orders
-          </h1>
-          {userRole !== "OPERATOR" && (
+          <h1 className="text-4xl font-bold mb-4">Work Orders</h1>
+          {isAuthenticated.userRole === "PRODUCTION_MANAGER" && (
             <button onClick={handleToggleAddWorkOrder}>
               {showAddWorkOrder ? "Hide Add Work Order" : "Add Work Order"}
             </button>

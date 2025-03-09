@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { Status } from "@prisma/client";
-import { jwtDecode } from "jwt-decode";
 import { Input } from "@/components/ui/input";
 import { EditWorkOrderProps } from "@/utils/interfaces";
-import { DecodedToken } from "@/utils/interfaces";
-import { Operator } from "@/utils/interfaces";
+import { useAuthentication } from "@/hooks/useAuth";
+import { useWorkOrders } from "@/hooks/useWorkOrder";
+import { useOperators } from "@/hooks/useOperator";
 
 const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
   workOrder,
@@ -24,49 +23,32 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
     workOrder.assignedToId ? workOrder.assignedToId.toString() : ""
   );
   const [progressNotes, setProgressNotes] = useState("");
-  const [operators, setOperators] = useState<Operator[]>([]);
   const [quantityChanged, setQuantityChanged] = useState<number>(0);
-  const [userRole, setUserRole] = useState<string>("");
 
-  useEffect(() => {
-    const fetchOperators = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found. User not authenticated.");
-          return;
-        }
-        const decodedToken: DecodedToken = jwtDecode(token);
-        setUserRole(decodedToken.role);
+  const { userRole } = useAuthentication({
+    allowedRoles: ["PRODUCTION_MANAGER", "OPERATOR"],
+  });
 
-        const response = await fetch("/api/users", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setOperators(data.users);
+  const token = localStorage.getItem("token");
 
-          if (decodedToken.role === "OPERATOR") {
-            setAssignedToId(decodedToken.userId.toString());
-          }
-        } else {
-          console.error("Failed to fetch operators");
-        }
-      } catch (error) {
-        console.error("Error fetching operators:", error);
-      }
-    };
+  const {
+    operators,
+    loading: operatorsLoading,
+    error: operatorsError,
+  } = useOperators(
+    token,
+    userRole === "OPERATOR" ? setAssignedToId : undefined
+  );
 
-    fetchOperators();
-  }, []);
+  const { refresh } = useWorkOrders(token);
+
+  if (operatorsLoading) return <div>Loading...</div>;
+  if (operatorsError) return <div>Error: {operatorsError}</div>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("Unauthorized");
       }
@@ -98,6 +80,7 @@ const EditWorkOrder: React.FC<EditWorkOrderProps> = ({
         throw new Error(errorData.message || "Failed to edit work order");
       }
 
+      refresh();
       onWorkOrderUpdated();
       onClose();
     } catch (error: any) {
